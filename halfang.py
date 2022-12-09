@@ -1,54 +1,73 @@
 import pyautogui
-#import sys
+import sys
 import keyboard
 import time
 from PIL import ImageGrab
-import cv2
-import numpy as np
+#import cv2
+#import numpy as np
 
-x_pad = 0
-y_pad = 0
 cards_coordinates = (608, 345, 730, 430)
-boss_health_coords = (74,63,75,64)
 grass_coords = (480,653, 481, 654)
+spellbook_coords = (1240,650, 1241, 651)
+
 def check_for_enchant(cards,cast_flag):
-    for y in range(10,80,1):
-        for x in range (0,110,1):
-            if(cards[x,y][0] >= 160 and cards[x,y][0] <= 200 and cards[x,y][2] == 0):
-                print("Found enchant")
-                print("Color: ", cards[x,y])
-                print(cards_coordinates[0]+x,cards_coordinates[1]+y)
-                pyautogui.moveTo(cards_coordinates[0]+x,cards_coordinates[1]+y)
-                if(cast_flag==1):
-                    pyautogui.moveTo(cards_coordinates[0]+x+10,cards_coordinates[1]+y)
+    for relative_y in range(10,80,1):
+        for relative_x in range (0,110,1):
+            absolute_x, absolute_y = cards_coordinates[0]+relative_x, cards_coordinates[1]+relative_y
+            if(cards[relative_x,relative_y][0] >= 160 and cards[relative_x,relative_y][0] <= 200 and cards[relative_x,relative_y][2] == 0):
+                if(cast_flag==0):
+                    pyautogui.moveTo(absolute_x,absolute_y)
+                elif(cast_flag==1):
+                    pyautogui.moveTo(670,375)
                 pyautogui.click()
+                pyautogui.moveTo(40,10)
                 return True
     return False
 
 def enchant_card(cards):
-    for y in range(10,80,1):
-        for x in range (0,110,2):
-            #print(cards.load()[x,y])
-            if(cards[x,y][0] < 100 and cards[x,y][2] > 200):
-                print("Found blizzard")
-                print(cards_coordinates[0]+x,cards_coordinates[1]+y)
-                pyautogui.moveTo(cards_coordinates[0]+x,cards_coordinates[1]+y)
-                if(cards_coordinates[0]+x > 670):
-                    pyautogui.moveTo(cards_coordinates[0]+x+10,cards_coordinates[1]+y) 
+    for relative_y in range(10,80,1):
+        for relative_x in range (0,110,2):
+            absolute_x, absolute_y = cards_coordinates[0]+relative_x, cards_coordinates[1]+relative_y
+            if(cards[relative_x,relative_y][0] < 100 and cards[relative_x,relative_y][2] > 200):
+                pyautogui.moveTo(absolute_x,absolute_y)
+                if(absolute_x > 670):
+                    pyautogui.moveTo(absolute_x+10,absolute_y) 
                 pyautogui.click()
-                pyautogui.moveTo(x,y)
+                pyautogui.moveTo(40,10)
                 return True
     return False
-def poll_grass():
-    print("polling...")
-    grass = ImageGrab.grab(grass_coords).load()
-    grass_pixel = grass[0,0]
-    print(grass_pixel)
-    if(grass_pixel[1] > 250):
-        return 1
-    else:
-        return 0
 
+def poll_fight():
+    spellbook = ImageGrab.grab(bbox=spellbook_coords).load()
+    spellbook_pixel=spellbook[0,0]
+    if(spellbook_pixel[0]>=220 and spellbook_pixel[1]>=210):
+        return True
+    else:
+        return False
+
+def poll_grass():
+    grass = ImageGrab.grab(bbox=grass_coords).load()
+    grass_pixel = grass[0,0]
+    if(grass_pixel[1] > 250):
+        return True
+    else:
+        return False
+
+def change_realm():
+    pyautogui.click(853,172)
+    pyautogui.press('escape')
+    pyautogui.click(853,172)
+    for i in range(0,6):
+        pyautogui.click(545,601)
+    pyautogui.click(467,355)
+    pyautogui.click(467,355)
+    time.sleep(0.5)
+    pyautogui.click(467,640)
+    pyautogui.click(467,640)
+    pyautogui.press('escape')
+
+
+print("Press ` to start...")
 while True:
     if(keyboard.is_pressed('`')):
         while True:
@@ -60,42 +79,39 @@ while True:
             time.sleep(3)
             pyautogui.keyUp('w')
             
-            time.sleep(8)
-            cards = ImageGrab.grab(cards_coordinates)
-    
+            time.sleep(7)
+            cards = ImageGrab.grab(bbox=cards_coordinates)
+
             if(check_for_enchant(cards.load(),0)): #click enchant
-                time.sleep(0.5)
+                print("Found enchant")
+                time.sleep(0.25)
                 if(enchant_card(cards.load())): #enchant blizzard
-                    time.sleep(0.5)
+                    print("Found blizzard")
+                    time.sleep(0.25)
                     check_for_enchant(cards.load(),1) #cast blizzard
                 else:
                     print("Blizzard not found")
             else:
                 print("No enchant found")
-            print("")
+            
 
-            #poll_health_bar()
-            #print("done polling")
-            while(poll_grass()==0):
-                time.sleep(3)
-                pyautogui.keyDown('d')
-                time.sleep(0.5)
-                pyautogui.keyUp('d')
-                pyautogui.keyDown('s')
-                time.sleep(5)
-                pyautogui.keyUp('s')
+            print("Checking for battle end...")
+            while(not poll_fight()):
+                time.sleep(1)
 
-            pyautogui.click(853,172)
-            pyautogui.press('escape')
-            pyautogui.click(853,172)
-            for i in range(0,6):
-                pyautogui.click(545,601)
-            pyautogui.click(467,355)
-            pyautogui.click(467,355)
+            pyautogui.keyDown('d')
             time.sleep(0.5)
-            pyautogui.click(467,640)
-            pyautogui.click(467,640)
-            pyautogui.press('escape')
+            pyautogui.keyUp('d')
+            pyautogui.keyDown('s')
+            time.sleep(5)
+            pyautogui.keyUp('s')
+            
+            print("Checking for outside...")
+            while(not poll_grass):
+                time.sleep(1)
+            
+            #time.sleep(1)
+            #change_realm()
 
             time.sleep(2)
 
