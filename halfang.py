@@ -9,6 +9,7 @@ from PIL import ImageGrab
 cards_coordinates = (608, 345, 730, 430)
 grass_coords = (480,653, 481, 654)
 spellbook_coords = (1240,650, 1241, 651)
+lamp_post = (305,405,306,406)
 
 def check_for_enchant(cards,cast_flag):
     for relative_y in range(10,80,1):
@@ -53,6 +54,15 @@ def poll_grass():
     else:
         return False
 
+def poll_lamp():
+    lamp = ImageGrab.grab(bbox=lamp_post).load()
+    lamp_pixel = lamp[0,0]
+    #print(lamp_pixel)
+    if(lamp_pixel[0]>250 and lamp_pixel[1]>240 and lamp_pixel[2]<170):
+        return True
+    else:
+        return False
+
 def change_realm():
     pyautogui.click(853,172)
     pyautogui.press('escape')
@@ -73,8 +83,14 @@ while True:
         while True:
             pyautogui.keyDown('x')
             pyautogui.keyUp('x')
-            time.sleep(13)
+            time.sleep(2)
 
+            print("Waiting to enter boss room...")
+            while(poll_lamp()):
+                time.sleep(1)
+            
+            time.sleep(2)
+            print("Entered boss room")
             pyautogui.keyDown('w')
             time.sleep(3)
             pyautogui.keyUp('w')
@@ -95,9 +111,10 @@ while True:
                 print("No enchant found")
             
 
-            print("Checking for battle end...")
+            print("Waiting for battle to end...")
             while(not poll_fight()):
                 time.sleep(1)
+            print("Battle ended")
 
             pyautogui.keyDown('d')
             time.sleep(0.5)
@@ -109,7 +126,7 @@ while True:
             print("Checking for outside...")
             while(not poll_grass):
                 time.sleep(1)
-            
+            print("Outside detected")
             #time.sleep(1)
             #change_realm()
 
