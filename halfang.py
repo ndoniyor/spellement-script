@@ -9,7 +9,9 @@ from PIL import ImageGrab
 cards_coordinates = (608, 345, 730, 430)
 grass_coords = (480,653, 481, 654)
 spellbook_coords = (1240,650, 1241, 651)
+spellbook_backup = (1079,674,1080,675)
 lamp_post = (305,405,306,406)
+boss_health = (575,174,576,175)
 
 def check_for_enchant(cards,cast_flag):
     for relative_y in range(10,80,1):
@@ -41,7 +43,10 @@ def enchant_card(cards):
 def poll_fight():
     spellbook = ImageGrab.grab(bbox=spellbook_coords).load()
     spellbook_pixel=spellbook[0,0]
-    if(spellbook_pixel[0]>=220 and spellbook_pixel[1]>=210):
+
+    commons_icon = ImageGrab.grab(bbox=spellbook_backup).load()
+    commons_pixel = commons_icon[0,0]
+    if(spellbook_pixel[0]>=220 and spellbook_pixel[1]>=210 and commons_pixel[0]>240 and commons_pixel[1]>240 and commons_pixel[2]<100):
         return True
     else:
         return False
@@ -59,6 +64,14 @@ def poll_lamp():
     lamp_pixel = lamp[0,0]
     #print(lamp_pixel)
     if(lamp_pixel[0]>250 and lamp_pixel[1]>240 and lamp_pixel[2]<170):
+        return True
+    else:
+        return False
+
+def poll_boss_health():
+    health = ImageGrab.grab(bbox=boss_health).load()
+    health_pixel = health[0,0]
+    if(health_pixel[0]>140 and health_pixel[1]<10 and health_pixel[2]>240):
         return True
     else:
         return False
@@ -90,7 +103,11 @@ while True:
                 time.sleep(1)
             
             time.sleep(2)
-            print("Entered boss room")
+            print("Waiting to start moving...")
+            while(not poll_boss_health()):
+                time.sleep(0.5)
+            print("Boss detected")
+
             pyautogui.keyDown('w')
             time.sleep(3)
             pyautogui.keyUp('w')
