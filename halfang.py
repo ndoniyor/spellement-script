@@ -43,10 +43,8 @@ def enchant_card(cards):
 def poll_fight():
     spellbook = ImageGrab.grab(bbox=spellbook_coords).load()
     spellbook_pixel=spellbook[0,0]
-
-    commons_icon = ImageGrab.grab(bbox=spellbook_backup).load()
-    commons_pixel = commons_icon[0,0]
-    if(spellbook_pixel[0]>=220 and spellbook_pixel[1]>=210 and commons_pixel[0]>240 and commons_pixel[1]>240 and commons_pixel[2]<100):
+    print(spellbook_coords[0],spellbook_coords[1], spellbook_pixel)
+    if(spellbook_pixel[0]==174 and spellbook_pixel[1]==168):
         return True
     else:
         return False
@@ -63,7 +61,7 @@ def poll_lamp():
     lamp = ImageGrab.grab(bbox=lamp_post).load()
     lamp_pixel = lamp[0,0]
     #print(lamp_pixel)
-    if(lamp_pixel[0]>250 and lamp_pixel[1]>240 and lamp_pixel[2]<170):
+    if(lamp_pixel[0]>250 and lamp_pixel[1]>240 and lamp_pixel[2]<190):
         return True
     else:
         return False
@@ -99,14 +97,13 @@ while True:
             time.sleep(2)
 
             print("Waiting to enter boss room...")
-            while(poll_lamp()):
+            while(poll_lamp() or keyboard.is_pressed('n')):
                 time.sleep(1)
             
             time.sleep(2)
-            print("Waiting to start moving...")
-            while(not poll_boss_health()):
-                time.sleep(0.5)
-            print("Boss detected")
+            pyautogui.keyDown('a')
+            time.sleep(0.05)
+            pyautogui.keyUp('a')
 
             pyautogui.keyDown('w')
             time.sleep(3)
@@ -129,7 +126,7 @@ while True:
             
 
             print("Waiting for battle to end...")
-            while(not poll_fight()):
+            while(not poll_fight() or keyboard.is_pressed('n')):
                 time.sleep(1)
             print("Battle ended")
 
@@ -141,7 +138,7 @@ while True:
             pyautogui.keyUp('s')
             
             print("Checking for outside...")
-            while(not poll_grass):
+            while(not poll_grass or keyboard.is_pressed('n')):
                 time.sleep(1)
             print("Outside detected")
             #time.sleep(1)
