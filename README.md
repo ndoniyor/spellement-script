@@ -1,5 +1,5 @@
 ## spellement-script
-Number of Python scripts to automate actions in Wizard101
+Number of Python scripts to automate actions in Wizard101\\
 #Packages used:
 * PyAutoGUI
 * OpenCV
